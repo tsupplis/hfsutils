@@ -92,12 +92,8 @@ all_cli :: $(CLITARGETS)
 all_lib :: $(LIBHFS) $(LIBRSRC)
 
 check :: all
-	@if [ -f hfs ]; then  \
-		cd test && $(MAKE) &&  \
-		echo "Self-tests passed.";  \
-	else  \
-		echo "Self-tests only available if configured --with-tcl.";  \
-	fi
+	cd test && $(MAKE) &&  \
+	echo "Self-tests passed.";  \
 
 install :: @INSTALL_TARGETS@
 
