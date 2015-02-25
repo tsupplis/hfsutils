@@ -276,7 +276,7 @@ char **hfsutil_glob(hfsvol *vol, int argc, char *argv[],
 char *hfsutil_getcwd(hfsvol *vol)
 {
   char *path, name[HFS_MAX_FLEN + 1 + 1];
-  long cwd;
+  unsigned long cwd;
   int pathlen;
 
   path    = malloc(1);

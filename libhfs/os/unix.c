@@ -41,6 +41,8 @@ int stat(const char *, struct stat *);
 int fstat(int, struct stat *);
 # endif
 
+# include <stdint.h>
+
 # include <errno.h>
 # include <sys/stat.h>
 
@@ -83,7 +85,7 @@ int os_open(void **priv, const char *path, int mode)
       (errno == EACCES || errno == EAGAIN))
     ERROR(EAGAIN, "unable to obtain lock for medium");
 
-  *priv = (void *) fd;
+  *priv = (void *) (uintptr_t)fd;
 
   return 0;
 
