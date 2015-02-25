@@ -78,7 +78,7 @@ int addent(mountent *ent)
  */
 int hcwd_init(void)
 {
-  const char *home, *start;
+  const char *home, *start, *hcwdpath;
   char buf[512], *path, *ptr;
   mountent entry;
   int newcur = -1;
@@ -94,7 +94,12 @@ int hcwd_init(void)
   strcpy(path, home);
   strcat(path, "/" STATEFNAME);
 
-  statef = fopen(path, "r+");
+  hcwdpath=getenv("HCWDPATH");
+  if (hcwdpath == 0) {
+    statef = fopen(path, "r+");
+  } else {
+    statef = fopen(hcwdpath, "r+");
+  }
   if (statef == 0 && errno == ENOENT)
     statef = fopen(path, "w+");
 
@@ -369,3 +374,5 @@ int hcwd_setcwd(mountent *ent, const char *newcwd)
 
   return 0;
 }
+
+
