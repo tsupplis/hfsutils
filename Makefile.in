@@ -39,7 +39,7 @@ MANEXT =	1
 INSTALL =	@INSTALL@
 BININSTALL =	@INSTALL_PROGRAM@ -m 755
 LIBINSTALL =	@INSTALL_DATA@
-HARDLINK =	ln -f
+SOFTLINK =	ln -s
 
 CC =		@CC@
 INCLUDES =	@CPPFLAGS@ -Ilibhfs @TCL_INCLUDES@ @TK_INCLUDES@
@@ -111,48 +111,48 @@ check :: all
 install :: @INSTALL_TARGETS@
 
 install_cli :: all_cli
-	$(BININSTALL) $(HFSUTIL) "$(BINDEST)/."
+	$(INSTALL) -d $(DESTDIR)/$(BINDEST) $(DESTDIR)/$(MANDEST)/man1
+	$(BININSTALL) $(HFSUTIL) "$(DESTDIR)/$(BINDEST)/."
 
 	for file in $(CLITARGETS); do  \
-		$(HARDLINK) "$(BINDEST)/$(HFSUTIL)" "$(BINDEST)/$$file";  \
+		rm -f "$(DESTDIR)/$(BINDEST)/$$file";  \
+		$(SOFTLINK) "$(HFSUTIL)" "$(DESTDIR)/$(BINDEST)/$$file";  \
 	done
-
-	rm -f "$(BINDEST)/$(HFSUTIL)"
 
 	for file in $(GENERALDOCS) $(CLIDOCS); do  \
 		$(LIBINSTALL) doc/man/$$file  \
-		"$(MANDEST)/man$(MANEXT)/`basename $$file .1`.$(MANEXT)";  \
+		"$(DESTDIR)$(MANDEST)/man$(MANEXT)/`basename $$file .1`.$(MANEXT)"; \
 	done
 
 install_tcl :: all_tcl
+	$(INSTALL) -d $(DESTDIR)$(BINDEST) $(DESTDIR)/$(MANDEST)/man1
 	for file in $(TCLTARGETS); do  \
 		$(BININSTALL) $$file "$(BINDEST)/.";  \
 	done
 
-	if [ -f "$(BINDEST)/hfs" ]; then  \
-		sed -e '1d' "$(BINDEST)/hfs" > "$(BINDEST)/hfs.new";  \
-		$(BININSTALL) "$(BINDEST)/hfs.new" "$(BINDEST)/hfs";  \
-		rm -f "$(BINDEST)/hfs.new";  \
-	fi
+	sed -e '1d' "$(DESTDIR)/$(BINDEST)/hfs" > "$(DESTDIR)/$(BINDEST)/hfs.new"
+	$(BININSTALL) "$(DESTDIR)/$(BINDEST)/hfs.new" "$(DESTDIR)/$(BINDEST)/hfs"
+	rm -f "$(DESTDIR)/$(BINDEST)/hfs.new"
 
 	for file in $(TCLDOCS); do  \
 		$(LIBINSTALL) doc/man/$$file  \
-		"$(MANDEST)/man$(MANEXT)/`basename $$file .1`.$(MANEXT)";  \
+		"$(DESTDIR)/$(MANDEST)/man$(MANEXT)/`basename $$file .1`.$(MANEXT)";  \
 	done
 
 install_tk :: all_tk
+	$(INSTALL) -d $(DESTDIR)$(BINDEST) $(DESTDIR)/$(MANDEST)/man1
 	for file in $(TKTARGETS); do  \
-		$(BININSTALL) $$file "$(BINDEST)/.";  \
+		$(BININSTALL) $$file "$(DESTDIR)/$(BINDEST)/.";  \
 	done
 
 	for file in $(TKDOCS); do  \
 		$(LIBINSTALL) doc/man/$$file  \
-		"$(MANDEST)/man$(MANEXT)/`basename $$file .1`.$(MANEXT)";  \
+		"$(DESTDIR)/$(MANDEST)/man$(MANEXT)/`basename $$file .1`.$(MANEXT)";  \
 	done
 
 install_lib :: all_lib
-	cd libhfs && $(MAKE) install
-	cd librsrc && $(MAKE) install
+	cd libhfs && $(MAKE) DESTDIR=$(DESTDIR) install
+	cd librsrc && $(MAKE) DESTDIR=$(DESTDIR) install
 
 again :: clean all
 
@@ -180,6 +180,7 @@ distclean :: clean
 		(cd $$dir && $(MAKE) distclean);  \
 	done
 
+	rm -rf autom4te.cache
 	rm -f config.status config.cache config.log config.h
 	rm -f hfsck/Makefile linux/Makefile Makefile
 
@@ -232,7 +233,8 @@ $(HFSUTIL): $(LIBHFS) hfsutil.o hcwd.o $(CLIOBJS) $(UTILOBJS) $(LIBOBJS)
 		-lhfs $(LIBS) $(LIBOBJS) -o $@
 
 $(CLITARGETS): $(HFSUTIL)
-	-$(HARDLINK) $(HFSUTIL) $@
+	-rm -f $@
+	-$(SOFTLINK) $(HFSUTIL) $@
 
 hfssh: $(LIBHFS) hfssh.o tclhfs.o $(UTILOBJS) $(LIBOBJS)
 	$(CC) $(LDFLAGS) hfssh.o tclhfs.o $(UTILOBJS)  \
