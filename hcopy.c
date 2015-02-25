@@ -60,8 +60,12 @@ cpifunc automode_unix(const char *path)
     { ".txt",  cpi_text },
     { ".c",    cpi_text },
     { ".h",    cpi_text },
+    { ".cp",   cpi_text },
+    { ".hp",   cpi_text },
+    { ".p",    cpi_text },
     { ".html", cpi_text },
     { ".htm",  cpi_text },
+    { ".xml",  cpi_text },
     { ".rtf",  cpi_text },
 
     { 0,       0        }

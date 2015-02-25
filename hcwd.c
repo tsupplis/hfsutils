@@ -76,7 +76,7 @@ int addent(mountent *ent)
  * NAME:	hcwd->init()
  * DESCRIPTION:	read state file
  */
-int hcwd_init(void)
+int hcwd_init(const char * altpath)
 {
   const char *home, *start, *hcwdpath;
   char buf[512], *path, *ptr;
@@ -94,7 +94,10 @@ int hcwd_init(void)
   strcpy(path, home);
   strcat(path, "/" STATEFNAME);
 
-  hcwdpath=getenv("HCWDPATH");
+  hcwdpath = altpath;
+  if (hcwdpath == 0) 
+    hcwdpath=getenv("HCWDPATH");
+
   if (hcwdpath == 0) {
     statef = fopen(path, "r+");
   } else {

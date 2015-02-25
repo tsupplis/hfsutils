@@ -27,7 +27,7 @@ typedef struct {
   char *cwd;
 } mountent;
 
-int hcwd_init(void);
+int hcwd_init(const char * altpath);
 int hcwd_finish(void);
 
 int hcwd_mounted(const char *, long, const char *, int);

@@ -68,6 +68,7 @@ int main(int argc, char *argv[])
 {
   int i, len;
   const char *dot;
+  const char *altpath=0;
 
   struct {
     const char *name;
@@ -126,7 +127,7 @@ int main(int argc, char *argv[])
 
 	  bargv0 = list[i].name;
 
-	  if (hcwd_init() == -1)
+	  if (hcwd_init(altpath) == -1)
 	    {
 	      perror("Failed to initialize HFS working directories");
 	      return 1;
