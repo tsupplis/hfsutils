@@ -27,3 +27,6 @@ int cpo_macb(hfsvol *, const char *, const char *);
 int cpo_binh(hfsvol *, const char *, const char *);
 int cpo_text(hfsvol *, const char *, const char *);
 int cpo_raw(hfsvol *, const char *, const char *);
+#ifdef __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__
+int cpo_x(hfsvol *, const char *, const char *);
+#endif

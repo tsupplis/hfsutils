@@ -621,12 +621,6 @@ ac_includes_default="\
 #endif"
 
 ac_subst_vars='LTLIBOBJS
-TK_LIBS
-TK_LIB_SPEC
-TK_INCLUDES
-TCL_LIBS
-TCL_LIB_SPEC
-TCL_INCLUDES
 INSTALL_TARGETS
 MAKE_TARGETS
 LIBOBJS
@@ -687,8 +681,6 @@ SHELL'
 ac_subst_files=''
 ac_user_opts='
 enable_option_checking
-with_tcl
-with_tk
 enable_cli
 enable_devlibs
 enable_debug
@@ -1312,12 +1304,6 @@ Optional Features:
   --disable-cli           do not build or install the command-line utils
   --enable-devlibs        enable installation of the developer libraries
   --enable-debug          enable diagnostic debugging support
-
-Optional Packages:
-  --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
-  --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
-  --with-tcl=DIR        build the Tcl components
-  --with-tk=DIR         build the Tk components
 
 Some influential environment variables:
   CC          C compiler command
@@ -2198,45 +2184,6 @@ ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
 
 subdirs="$subdirs libhfs librsrc"
 
-
-
-# Check whether --with-tcl was given.
-if test "${with_tcl+set}" = set; then :
-  withval=$with_tcl;
-    case "$with_tcl" in
-	yes|no)
-	    tcl_dir="DEFAULT"
-	    ;;
-	*)
-	    tcl_dir="$with_tcl"
-	    with_tcl=yes
-	    ;;
-    esac
-
-fi
-
-
-
-# Check whether --with-tk was given.
-if test "${with_tk+set}" = set; then :
-  withval=$with_tk;
-    case "$with_tk" in
-	yes|no)
-	    tk_dir="DEFAULT"
-	    ;;
-	*)
-	    tk_dir="$with_tk"
-	    with_tk=yes
-	    ;;
-    esac
-
-fi
-
-
-if test "$with_tk" = yes && test "$with_tcl" != yes
-then
-    as_fn_error $? "--with-tk requires --with-tcl" "$LINENO" 5
-fi
 
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether ${MAKE-make} sets \$(MAKE)" >&5
@@ -3938,184 +3885,6 @@ INSTALL_TARGETS=""
 
 
 
-
-
-TCL_INCLUDES=""
-TCL_LIB_SPEC=""
-TCL_LIBS=""
-
-
-
-
-
-if test "$with_tcl" = yes
-then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Tcl" >&5
-$as_echo_n "checking for Tcl... " >&6; }
-
-    found=""
-    for dir in  \
-	"$tcl_dir"		\
-	"$tcl_dir/lib"		\
-	"$tcl_dir/../lib"	\
-	/usr/local/lib		\
-	/usr/local/lib/tcl*	\
-	/usr/local/tcl*/lib	\
-	/usr/lib		\
-	/usr/lib/tcl*		\
-	/usr/tcl*/lib		\
-	;			\
-    do
-	if test -r "$dir/tclConfig.sh"
-	then
-	    found="$dir"
-	    break
-	fi
-    done
-
-    if test -z "$found"
-    then
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: cannot find installation" >&5
-$as_echo "cannot find installation" >&6; }
-	as_fn_error $? "use --without-tcl or --with-tcl=DIR" "$LINENO" 5
-    fi
-
-    tcl_dir="$found"
-    . "$tcl_dir/tclConfig.sh"
-
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: version $TCL_VERSION in $tcl_dir" >&5
-$as_echo "version $TCL_VERSION in $tcl_dir" >&6; }
-
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for tcl.h" >&5
-$as_echo_n "checking for tcl.h... " >&6; }
-
-    found=""
-    for dir in  \
-	$TCL_PREFIX/include				\
-	$TCL_PREFIX/include/tcl*			\
-	$TCL_PREFIX/tcl*/include			\
-	"$tcl_dir"					\
-	"$tcl_dir/include"				\
-	"$tcl_dir/../include"				\
-	`echo "$tcl_dir" | sed -e 's|/lib|/include|'`	\
-	;						\
-    do
-	if test -r "$dir/tcl.h"
-	then
-	    found="$dir"
-	    break
-	fi
-    done
-
-    if test -z "$found"
-    then
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: not found" >&5
-$as_echo "not found" >&6; }
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: compilation of Tcl components may fail" >&5
-$as_echo "$as_me: WARNING: compilation of Tcl components may fail" >&2;}
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: edit Makefile if necessary and contact author" >&5
-$as_echo "$as_me: WARNING: edit Makefile if necessary and contact author" >&2;}
-    else
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $found" >&5
-$as_echo "$found" >&6; }
-	TCL_INCLUDES="-I$found"
-    fi
-
-    MAKE_TARGETS="$MAKE_TARGETS all_tcl"
-    INSTALL_TARGETS="$INSTALL_TARGETS install_tcl"
-fi
-
-
-TK_INCLUDES=""
-TK_LIB_SPEC=""
-TK_LIBS=""
-
-
-
-
-
-if test "$with_tk" = yes
-then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Tk" >&5
-$as_echo_n "checking for Tk... " >&6; }
-
-    found=""
-    for dir in  \
-	"$tk_dir"		\
-	"$tk_dir/lib"		\
-	"$tk_dir/../lib"	\
-	/usr/local/lib		\
-	/usr/local/lib/tk*	\
-	/usr/local/tk*/lib	\
-	/usr/lib		\
-	/usr/lib/tk*		\
-	/usr/tk*/lib		\
-	;			\
-    do
-	if test -r "$dir/tkConfig.sh"
-	then
-	    found="$dir"
-	    break
-	fi
-    done
-
-    if test -z "$found"
-    then
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: cannot find installation" >&5
-$as_echo "cannot find installation" >&6; }
-	as_fn_error $? "use --without-tk or --with-tk=DIR" "$LINENO" 5
-    fi
-
-    tk_dir="$found"
-    . "$tk_dir/tkConfig.sh"
-
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: version $TK_VERSION in $tk_dir" >&5
-$as_echo "version $TK_VERSION in $tk_dir" >&6; }
-
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for tk.h" >&5
-$as_echo_n "checking for tk.h... " >&6; }
-
-    found=""
-    for dir in  \
-	$TK_PREFIX/include				\
-	$TK_PREFIX/include/tk*				\
-	$TK_PREFIX/tk*/include				\
-	"$tk_dir"					\
-	"$tk_dir/include"				\
-	"$tk_dir/../include"				\
-	`echo "$tk_dir" | sed -e 's|/lib|/include|'`	\
-	;						\
-    do
-	if test -r "$dir/tk.h"
-	then
-	    found="$dir"
-	    break
-	fi
-    done
-
-    if test -z "$found"
-    then
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: not found" >&5
-$as_echo "not found" >&6; }
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: compilation of Tk components may fail" >&5
-$as_echo "$as_me: WARNING: compilation of Tk components may fail" >&2;}
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: edit Makefile if necessary and contact author" >&5
-$as_echo "$as_me: WARNING: edit Makefile if necessary and contact author" >&2;}
-    else
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $found" >&5
-$as_echo "$found" >&6; }
-
-	if test "x-I$found" != "x$TCL_INCLUDES"
-	then
-	    TK_INCLUDES="-I$found"
-	fi
-    fi
-
-    TK_INCLUDES="$TK_INCLUDES $TK_XINCLUDES"
-
-    MAKE_TARGETS="$MAKE_TARGETS all_tk"
-    INSTALL_TARGETS="$INSTALL_TARGETS install_tk"
-fi
 
 
 # Check whether --enable-cli was given.

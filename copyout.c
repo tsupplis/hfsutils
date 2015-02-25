@@ -55,6 +55,11 @@ extern int errno;
 
 # define MACB_BLOCKSZ	128
 
+#ifdef __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__
+# define RSRC_SUFFIX "/..namedfork/rsrc"
+# define RSRC_SUFFIX_OLD "/rsrc"
+#endif
+
 /* Copy Routines =========================================================== */
 
 /*
@@ -650,3 +655,46 @@ int cpo_raw(hfsvol *vol, const char *srcname, const char *dstname)
 
   return result;
 }
+
+#ifdef __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__
+/*
+ * NAME:	cpo->x()
+ * DESCRIPTION:	copy the data fork of an HFS file to a HFS+ file
+ */
+int cpo_x(hfsvol *vol, const char *srcname, const char *dstname)
+{
+  hfsfile *ifile;
+  int ofile, result = 0;
+  char * rsrcname = 0;
+
+  if (openfiles(vol, srcname, dstname, 0, &ifile, &ofile) == -1)
+    return -1;
+
+  result = do_raw(ifile, ofile);
+
+  closefiles(ifile, ofile, &result);
+
+  if(result < 0) {
+        return result;
+  }
+
+  rsrcname=malloc(strlen(dstname)+strlen(RSRC_SUFFIX)+1);
+  strcpy(rsrcname,dstname);
+  strcat(rsrcname,RSRC_SUFFIX);
+  if (openfiles(vol, srcname, dstname, 0, &ifile, &ofile) == -1) {
+    return -1;
+  }
+
+  if (hfs_setfork(ifile, 1) == -1)
+  {
+      ERROR(errno, hfs_error);
+      return -1;
+  }
+
+  result = do_raw(ifile, ofile);
+
+  closefiles(ifile, ofile, &result);
+
+  return result;
+}
+#endif

@@ -168,7 +168,11 @@ cpofunc automode_hfs(hfsvol *vol, const char *path)
 	return cpo_raw;
     }
 
+#ifdef __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__
+  return cpo_x;
+#else
   return cpo_macb;
+#endif
 }
 
 /*
@@ -209,6 +213,12 @@ int do_copyout(hfsvol *vol, int argc, char *argv[], const char *dest, int mode)
     case 'r':
       copyfile = cpo_raw;
       break;
+
+#ifdef __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__
+    case 'x':
+      copyfile = cpo_x;
+      break;
+#endif
     }
 
   for (i = 0; i < argc; ++i)
@@ -246,8 +256,13 @@ int do_copyout(hfsvol *vol, int argc, char *argv[], const char *dest, int mode)
 static
 int usage(void)
 {
-  fprintf(stderr, "Usage: %s [-m|-b|-t|-r|-a] source-path [...] target-path\n",
+#ifdef __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__
+  fprintf(stderr, "Usage: %s [-m|-b|-t|-r|-a|-x] source-path [...] target-path\n",
 	  argv0);
+#else
+  fprintf(stderr, "Usage: %s [-m|-b|-t|-r|-a| source-path [...] target-path\n",
+	  argv0);
+#endif
 
   return 1;
 }
@@ -269,7 +284,11 @@ int hcopy_main(int argc, char *argv[])
     {
       int opt;
 
+#ifdef __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__
+      opt = getopt(argc, argv, "mbtrax");
+#else
       opt = getopt(argc, argv, "mbtra");
+#endif
       if (opt == EOF)
 	break;
 

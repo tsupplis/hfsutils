@@ -18,30 +18,8 @@ NOTES ON THIS RELEASE
   There are a few special options you can give the `configure' program that
   you should know about:
 
-      --with-tcl            build the Tcl/Tk components
-      --with-tk             build the Tk-based X interface `xhfs'
       --disable-cli         do not build or install the command-line utils
       --enable-devlibs      enable installation of the developer libraries
-
-  To build the Tcl tools `hfssh' and `hfs', you must use `--with-tcl'.
-  To build the X interface `xhfs', you must use `--with-tcl --with-tk'.
-
-  In order to build the Tcl tools you must have Tcl 7.6 or newer already
-  installed on your system. To build the X interface, you must have Tk 4.2
-  or newer installed as well.
-
-  If `configure' is unable to locate your Tcl or Tk installation, you will
-  have to give it a hint. It looks for the files `tclConfig.sh' and
-  `tkConfig.sh' (respectively) which contain all the details about your
-  configuration; these files were created when Tcl/Tk was installed on your
-  system.
-
-  To help `configure' find these files, you can specify a directory name on
-  the command line. For example:
-
-      ./configure --with-tcl=/usr/share/tcl --with-tk=/usr/share/tk
-
-  When in doubt, wait and see if `configure' complains.
 
   By default, the command-line utilities (hmount, hls, hcopy, etc.) are
   always built and installed. If you don't want them, use `--disable-cli'.
