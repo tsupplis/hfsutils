@@ -2,7 +2,7 @@
 hfsutils - tools for reading and writing Macintosh HFS volumes
 Copyright (C) 1996-1998 Robert Leslie
 
-$Id: README,v 1.10 1998/09/08 18:51:51 rob Exp $
+Support for OS/X creator, file type and resource fork transfer added.
 
 ===============================================================================
 
