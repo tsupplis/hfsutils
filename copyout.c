@@ -686,7 +686,7 @@ int cpo_x(hfsvol *vol, const char *srcname, const char *dstname)
   }
   closefiles(ifile, ofile, &result);
 
-  if(result < 0) {
+  if(result < 0 || strcmp("-",dstname)==0) {
       return result;
   }
 

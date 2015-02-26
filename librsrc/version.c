@@ -24,6 +24,6 @@
 const char librsrc_rcsid[] =
   "$Id: version.c,v 1.11 1998/11/02 22:09:17 rob Exp $";
 
-const char librsrc_version[]   = "librsrc version 3.2.6.ts1";
+const char librsrc_version[]   = "librsrc version 3.2.6.ts2";
 const char librsrc_copyright[] = "Copyright (C) 1996-1998 Robert Leslie";
 const char librsrc_author[]    = "Robert Leslie <rob@mars.org>";

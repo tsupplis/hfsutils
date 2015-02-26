@@ -835,10 +835,12 @@ int cpi_x(const char *srcname, hfsvol *vol, const char *dstname)
 
   strcpy(type,RAW_TYPE);
   strcpy(crea,RAW_CREA);
-  memset(attr,0,sizeof(attr));
-  if(getxattr(srcname, XATTR_FINDERINFO_NAME, attr,32,0,0)==32) {
-      memcpy(type,attr,4);
-      memcpy(crea,attr+4,4);
+  if(strcmp(srcname,"-") != 0) {
+      memset(attr,0,sizeof(attr));
+      if(getxattr(srcname, XATTR_FINDERINFO_NAME, attr,32,0,0)==32) {
+          memcpy(type,attr,4);
+          memcpy(crea,attr+4,4);
+      }
   }
  
   ofile = opendst(vol, dstname, dsthint, type, crea);
@@ -852,7 +854,7 @@ int cpi_x(const char *srcname, hfsvol *vol, const char *dstname)
 
   closeifile(ifile, &result);
 
-  if(result < 0) {
+  if(result < 0 || strcmp(srcname,"-")==0) {
       closeofile(ofile, &result);
       return result;
   }

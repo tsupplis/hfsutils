@@ -24,6 +24,6 @@
 const char libhfs_rcsid[] =
   "$Id: version.c,v 1.11 1998/11/02 22:09:09 rob Exp $";
 
-const char libhfs_version[]   = "libhfs version 3.2.6.ts1";
+const char libhfs_version[]   = "libhfs version 3.2.6.ts2";
 const char libhfs_copyright[] = "Copyright (C) 1996-1998 Robert Leslie";
 const char libhfs_author[]    = "Robert Leslie <rob@mars.org>";
