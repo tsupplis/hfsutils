@@ -56,6 +56,8 @@ extern int errno;
 # define MACB_BLOCKSZ	128
 
 #ifdef __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__
+# include <sys/utsname.h>
+# include <sys/xattr.h>
 # define RSRC_SUFFIX "/..namedfork/rsrc"
 # define RSRC_SUFFIX_OLD "/rsrc"
 #endif
@@ -663,37 +665,63 @@ int cpo_raw(hfsvol *vol, const char *srcname, const char *dstname)
  */
 int cpo_x(hfsvol *vol, const char *srcname, const char *dstname)
 {
+  char attr[32];
   hfsfile *ifile;
+  hfsdirent ent;
   int ofile, result = 0;
   char * rsrcname = 0;
+  long major;
+  struct utsname uts;
 
   if (openfiles(vol, srcname, dstname, 0, &ifile, &ofile) == -1)
     return -1;
 
   result = do_raw(ifile, ofile);
 
+  if (hfs_fstat(ifile, &ent) == -1)
+  {
+      ERROR(errno, hfs_error);
+      closefiles(ifile, ofile, &result);
+      return -1;
+  }
   closefiles(ifile, ofile, &result);
 
   if(result < 0) {
-        return result;
+      return result;
   }
 
-  rsrcname=malloc(strlen(dstname)+strlen(RSRC_SUFFIX)+1);
-  strcpy(rsrcname,dstname);
-  strcat(rsrcname,RSRC_SUFFIX);
-  if (openfiles(vol, srcname, dstname, 0, &ifile, &ofile) == -1) {
+  uname(&uts);
+  major=atol(uts.release);
+  if(major>9) {
+      rsrcname=malloc(strlen(dstname)+strlen(RSRC_SUFFIX)+1);
+      strcpy(rsrcname,dstname);
+      strcat(rsrcname,RSRC_SUFFIX);
+  } else {
+      rsrcname=malloc(strlen(dstname)+strlen(RSRC_SUFFIX_OLD)+1);
+      strcpy(rsrcname,dstname);
+      strcat(rsrcname,RSRC_SUFFIX_OLD);
+  }
+  if (openfiles(vol, srcname, rsrcname, 0, &ifile, &ofile) == -1) {
+    free(rsrcname);
     return -1;
   }
+  free(rsrcname);
 
+  memset(attr,0,sizeof(attr));
+  memcpy(attr, ent.u.file.type,    4);
+  memcpy(attr+4, ent.u.file.creator, 4);
+  setxattr(dstname, XATTR_FINDERINFO_NAME, attr,32,0,XATTR_CREATE);
+  setxattr(dstname, XATTR_FINDERINFO_NAME, attr,32,0,XATTR_REPLACE);
   if (hfs_setfork(ifile, 1) == -1)
   {
       ERROR(errno, hfs_error);
+      closefiles(ifile, ofile, &result);
       return -1;
   }
 
   result = do_raw(ifile, ofile);
-
   closefiles(ifile, ofile, &result);
+
 
   return result;
 }

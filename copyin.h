@@ -27,3 +27,6 @@ int cpi_macb(const char *, hfsvol *, const char *);
 int cpi_binh(const char *, hfsvol *, const char *);
 int cpi_text(const char *, hfsvol *, const char *);
 int cpi_raw(const char *, hfsvol *, const char *);
+#ifdef __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__
+int cpi_x(const char *, hfsvol *, const char *);
+#endif

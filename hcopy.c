@@ -40,6 +40,11 @@
 # include "copyin.h"
 # include "copyout.h"
 
+#ifdef __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__
+# include <sys/utsname.h>
+# include <sys/xattr.h>
+#endif
+
 extern int optind;
 
 /*
@@ -71,6 +76,13 @@ cpifunc automode_unix(const char *path)
     { 0,       0        }
   };
 
+#ifdef __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__
+    if(getxattr(path,XATTR_FINDERINFO_NAME,0,0,0,0) != -1 ||
+        getxattr(path,XATTR_RESOURCEFORK_NAME,0,0,0,0) != -1) {
+        return cpi_x;
+    }
+#endif
+
   path += strlen(path);
 
   for (i = 0; exts[i].ext; ++i)
@@ -79,7 +91,12 @@ cpifunc automode_unix(const char *path)
 	return exts[i].func;
     }
 
+#ifdef __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__
+  return cpi_x;
+#else
   return cpi_raw;
+#endif
+
 }
 
 /*
@@ -120,6 +137,12 @@ int do_copyin(hfsvol *vol, int argc, char *argv[], const char *dest, int mode)
     case 'r':
       copyfile = cpi_raw;
       break;
+
+#ifdef __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__
+    case 'x':
+      copyfile = cpi_x;
+      break;
+#endif
     }
 
   for (i = 0; i < argc; ++i)
@@ -157,6 +180,9 @@ int do_copyin(hfsvol *vol, int argc, char *argv[], const char *dest, int mode)
 static
 cpofunc automode_hfs(hfsvol *vol, const char *path)
 {
+#ifdef __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__
+  return cpo_x;
+#else
   hfsdirent ent;
 
   if (hfs_stat(vol, path, &ent) != -1)
@@ -167,10 +193,6 @@ cpofunc automode_hfs(hfsvol *vol, const char *path)
       else if (ent.u.file.rsize == 0)
 	return cpo_raw;
     }
-
-#ifdef __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__
-  return cpo_x;
-#else
   return cpo_macb;
 #endif
 }

@@ -55,10 +55,25 @@ extern int errno;
 # define MACB_BLOCKSZ	128
 
 # define TEXT_TYPE	"TEXT"
+#ifdef __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__
+# define TEXT_CREA	"MOSX"
+# else
 # define TEXT_CREA	"UNIX"
+#endif
 
 # define RAW_TYPE	"????"
+#ifdef __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__
+# define RAW_CREA	"MOSX"
+# else
 # define RAW_CREA	"UNIX"
+#endif
+
+#ifdef __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__
+# include <sys/utsname.h>
+# include <sys/xattr.h>
+# define RSRC_SUFFIX "/..namedfork/rsrc"
+# define RSRC_SUFFIX_OLD "/rsrc"
+#endif
 
 /* Copy routines =========================================================== */
 
@@ -432,6 +447,35 @@ hfsfile *opendst(hfsvol *vol, const char *dstname, const char *hint,
 }
 
 /*
+ * NAME:	closeifile()
+ * DESCRIPTION:	close source files
+ */
+static
+void closeifile(int ifile, int *result)
+{
+  if (close(ifile) == -1 && *result == 0)
+    {
+      ERROR(errno, "error closing source file");
+      *result = -1;
+    }
+}
+
+/*
+ * NAME:	closeofile()
+ * DESCRIPTION:	close destination files
+ */
+static
+void closeofile(hfsfile *ofile, int *result)
+{
+  if (ofile && hfs_close(ofile) == -1 && *result == 0)
+    {
+      ERROR(errno, hfs_error);
+      *result = -1;
+    }
+
+}
+
+/*
  * NAME:	closefiles()
  * DESCRIPTION:	close source and destination files
  */
@@ -767,3 +811,81 @@ int cpi_raw(const char *srcname, hfsvol *vol, const char *dstname)
 
   return result;
 }
+
+#ifdef __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__
+/*
+ * NAME:	cpi->raw()
+ * DESCRIPTION:	copy a UNIX file to the data fork of an HFS file
+ */
+int cpi_x(const char *srcname, hfsvol *vol, const char *dstname)
+{
+  char attr[32];
+  char type[5];
+  char crea[5];
+  int ifile, result = 0;
+  hfsfile *ofile;
+  const char *dsthint;
+  char * rsrcname = 0;
+  long major;
+  struct utsname uts;
+
+  ifile = opensrc(srcname, &dsthint, 0, 1);
+  if (ifile == -1)
+    return -1;
+
+  strcpy(type,RAW_TYPE);
+  strcpy(crea,RAW_CREA);
+  memset(attr,0,sizeof(attr));
+  if(getxattr(srcname, XATTR_FINDERINFO_NAME, attr,32,0,0)==32) {
+      memcpy(type,attr,4);
+      memcpy(crea,attr+4,4);
+  }
+ 
+  ofile = opendst(vol, dstname, dsthint, type, crea);
+  if (ofile == 0)
+    {
+      close(ifile);
+      return -1;
+    }
+
+  result = do_raw(ifile, ofile);
+
+  closeifile(ifile, &result);
+
+  if(result < 0) {
+      closeofile(ofile, &result);
+      return result;
+  }
+
+  uname(&uts);
+  major=atol(uts.release);
+  if(major>9) {
+      rsrcname=malloc(strlen(srcname)+strlen(RSRC_SUFFIX)+1);
+      strcpy(rsrcname,srcname);
+      strcat(rsrcname,RSRC_SUFFIX);
+  } else {
+      rsrcname=malloc(strlen(srcname)+strlen(RSRC_SUFFIX_OLD)+1);
+      strcpy(rsrcname,srcname);
+      strcat(rsrcname,RSRC_SUFFIX_OLD);
+  }
+
+  ifile = opensrc(rsrcname, &dsthint, 0, 1);
+  if (ifile == -1) {
+    closeofile(ofile, &result);
+    return -1;
+  }
+
+  if (hfs_setfork(ofile, 1) == -1)
+  {
+      ERROR(errno, hfs_error);
+      closefiles(ifile, ofile, &result);
+      return -1;
+  }
+
+  result = do_raw(ifile, ofile);
+
+  closefiles(ifile, ofile, &result);
+
+  return result;
+}
+#endif

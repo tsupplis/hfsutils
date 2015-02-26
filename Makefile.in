@@ -133,7 +133,7 @@ clean ::
 		(cd $$dir && $(MAKE) clean);  \
 	done
 
-	rm -f $(TARGETS) *.o gmon.* core
+	rm -f $(HFSUTIL) $(TARGETS) *.o gmon.* core
 
 distclean :: clean
 	for dir in $(ACSUBDIRS); do  \
