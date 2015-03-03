@@ -490,9 +490,21 @@ hfsfile *opensrc(hfsvol *vol, const char *srcname,
  * DESCRIPTION:	open the destination file
  */
 static
-int opendst(const char *dstname, const char *hint)
+int opendst(const char *dstname, const char *hint,int rf)
 {
   int fd;
+  long major;
+  struct utsname uts;
+  char * suffix;
+
+  uname(&uts);
+  major=atol(uts.release);
+  if(major>9) {
+      suffix=RSRC_SUFFIX;
+  } else {
+      suffix=RSRC_SUFFIX_OLD;
+  }
+
 
   if (strcmp(dstname, "-") == 0)
     fd = dup(STDOUT_FILENO);
@@ -504,7 +516,11 @@ int opendst(const char *dstname, const char *hint)
       if (stat(dstname, &sbuf) != -1 &&
 	  S_ISDIR(sbuf.st_mode))
 	{
-	  path = malloc(strlen(dstname) + 1 + strlen(hint) + 1);
+      if(rf) {
+	    path = malloc(strlen(dstname) + 1 + strlen(hint) + strlen(suffix) + 1 );
+      } else { 
+	    path = malloc(strlen(dstname) + 1 + strlen(hint) + 1);
+      }
 	  if (path == 0)
 	    {
 	      ERROR(ENOMEM, 0);
@@ -514,6 +530,9 @@ int opendst(const char *dstname, const char *hint)
 	  strcpy(path, dstname);
 	  strcat(path, "/");
 	  strcat(path, hint);
+      if(rf) {
+	    strcat(path, suffix);
+      }
 
 	  dstname = path;
 	}
@@ -539,13 +558,14 @@ int opendst(const char *dstname, const char *hint)
  */
 static
 int openfiles(hfsvol *vol, const char *srcname, const char *dstname,
-	      const char *ext, hfsfile **ifile, int *ofile, const char **dsthint)
+	      const char *ext, hfsfile **ifile, int *ofile, int rf)
 {
-  *ifile = opensrc(vol, srcname, dsthint, ext);
+  const char *dsthint;
+  *ifile = opensrc(vol, srcname, &dsthint, ext);
   if (*ifile == 0)
     return -1;
 
-  *ofile = opendst(dstname, *dsthint);
+  *ofile = opendst(dstname, dsthint,rf);
   if (*ofile == -1)
     {
       hfs_close(*ifile);
@@ -585,9 +605,8 @@ int cpo_macb(hfsvol *vol, const char *srcname, const char *dstname)
 {
   hfsfile *ifile;
   int ofile, result = 0;
-  const char * dsthint;
 
-  if (openfiles(vol, srcname, dstname, ".bin", &ifile, &ofile, &dsthint) == -1)
+  if (openfiles(vol, srcname, dstname, ".bin", &ifile, &ofile, 0) == -1)
     return -1;
 
   result = do_macb(ifile, ofile);
@@ -605,9 +624,8 @@ int cpo_binh(hfsvol *vol, const char *srcname, const char *dstname)
 {
   hfsfile *ifile;
   int ofile, result;
-  const char * dsthint;
 
-  if (openfiles(vol, srcname, dstname, ".hqx", &ifile, &ofile, &dsthint) == -1)
+  if (openfiles(vol, srcname, dstname, ".hqx", &ifile, &ofile, 0) == -1)
     return -1;
 
   result = do_binh(ifile, ofile);
@@ -626,12 +644,11 @@ int cpo_text(hfsvol *vol, const char *srcname, const char *dstname)
   const char *ext = 0;
   hfsfile *ifile;
   int ofile, result = 0;
-  const char * dsthint;
 
   if (strchr(srcname, '.') == 0)
     ext = ".txt";
 
-  if (openfiles(vol, srcname, dstname, ext, &ifile, &ofile, &dsthint) == -1)
+  if (openfiles(vol, srcname, dstname, ext, &ifile, &ofile, 0) == -1)
     return -1;
 
   result = do_text(ifile, ofile);
@@ -649,9 +666,8 @@ int cpo_raw(hfsvol *vol, const char *srcname, const char *dstname)
 {
   hfsfile *ifile;
   int ofile, result = 0;
-  const char * dsthint;
 
-  if (openfiles(vol, srcname, dstname, 0, &ifile, &ofile, &dsthint) == -1)
+  if (openfiles(vol, srcname, dstname, 0, &ifile, &ofile, 0) == -1)
     return -1;
 
   result = do_raw(ifile, ofile);
@@ -672,25 +688,9 @@ int cpo_x(hfsvol *vol, const char *srcname, const char *dstname)
   hfsfile *ifile;
   hfsdirent ent;
   int ofile, result = 0;
-  char * rsrcname = 0;
-  long major;
-  struct utsname uts;
-  const char * dsthint;
 
-  printf("----> ok %s %s\n",srcname,dstname);
-  if (openfiles(vol, srcname, dstname, 0, &ifile, &ofile, &dsthint) == -1)
+  if (openfiles(vol, srcname, dstname, 0, &ifile, &ofile, 0) == -1)
     return -1;
-  major=atol(uts.release);
-  if(major>9) {
-      rsrcname=malloc(strlen(dsthint)+strlen(RSRC_SUFFIX)+1);
-      strcpy(rsrcname,dstname);
-      strcat(rsrcname,RSRC_SUFFIX);
-  } else {
-      rsrcname=malloc(strlen(dsthint)+strlen(RSRC_SUFFIX_OLD)+1);
-      strcpy(rsrcname,dstname);
-      strcat(rsrcname,RSRC_SUFFIX_OLD);
-  }
-
   result = do_raw(ifile, ofile);
 
   if (hfs_fstat(ifile, &ent) == -1)
@@ -705,12 +705,9 @@ int cpo_x(hfsvol *vol, const char *srcname, const char *dstname)
       return result;
   }
 
-  uname(&uts);
-  if (openfiles(vol, srcname, rsrcname, 0, &ifile, &ofile, &dsthint) == -1) {
-    free(rsrcname);
+  if (openfiles(vol, srcname, dstname, 0, &ifile, &ofile, 1) == -1) {
     return -1;
   }
-  free(rsrcname);
 
   memset(attr,0,sizeof(attr));
   memcpy(attr, ent.u.file.type,    4);
