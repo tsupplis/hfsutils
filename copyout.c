@@ -36,6 +36,7 @@ int dup(int);
 # endif
 
 # include <stdlib.h>
+# include <stdio.h>
 # include <string.h>
 # include <errno.h>
 # include <sys/stat.h>
@@ -538,15 +539,13 @@ int opendst(const char *dstname, const char *hint)
  */
 static
 int openfiles(hfsvol *vol, const char *srcname, const char *dstname,
-	      const char *ext, hfsfile **ifile, int *ofile)
+	      const char *ext, hfsfile **ifile, int *ofile, const char **dsthint)
 {
-  const char *dsthint;
-
-  *ifile = opensrc(vol, srcname, &dsthint, ext);
+  *ifile = opensrc(vol, srcname, dsthint, ext);
   if (*ifile == 0)
     return -1;
 
-  *ofile = opendst(dstname, dsthint);
+  *ofile = opendst(dstname, *dsthint);
   if (*ofile == -1)
     {
       hfs_close(*ifile);
@@ -586,8 +585,9 @@ int cpo_macb(hfsvol *vol, const char *srcname, const char *dstname)
 {
   hfsfile *ifile;
   int ofile, result = 0;
+  const char * dsthint;
 
-  if (openfiles(vol, srcname, dstname, ".bin", &ifile, &ofile) == -1)
+  if (openfiles(vol, srcname, dstname, ".bin", &ifile, &ofile, &dsthint) == -1)
     return -1;
 
   result = do_macb(ifile, ofile);
@@ -605,8 +605,9 @@ int cpo_binh(hfsvol *vol, const char *srcname, const char *dstname)
 {
   hfsfile *ifile;
   int ofile, result;
+  const char * dsthint;
 
-  if (openfiles(vol, srcname, dstname, ".hqx", &ifile, &ofile) == -1)
+  if (openfiles(vol, srcname, dstname, ".hqx", &ifile, &ofile, &dsthint) == -1)
     return -1;
 
   result = do_binh(ifile, ofile);
@@ -625,11 +626,12 @@ int cpo_text(hfsvol *vol, const char *srcname, const char *dstname)
   const char *ext = 0;
   hfsfile *ifile;
   int ofile, result = 0;
+  const char * dsthint;
 
   if (strchr(srcname, '.') == 0)
     ext = ".txt";
 
-  if (openfiles(vol, srcname, dstname, ext, &ifile, &ofile) == -1)
+  if (openfiles(vol, srcname, dstname, ext, &ifile, &ofile, &dsthint) == -1)
     return -1;
 
   result = do_text(ifile, ofile);
@@ -647,8 +649,9 @@ int cpo_raw(hfsvol *vol, const char *srcname, const char *dstname)
 {
   hfsfile *ifile;
   int ofile, result = 0;
+  const char * dsthint;
 
-  if (openfiles(vol, srcname, dstname, 0, &ifile, &ofile) == -1)
+  if (openfiles(vol, srcname, dstname, 0, &ifile, &ofile, &dsthint) == -1)
     return -1;
 
   result = do_raw(ifile, ofile);
@@ -672,9 +675,21 @@ int cpo_x(hfsvol *vol, const char *srcname, const char *dstname)
   char * rsrcname = 0;
   long major;
   struct utsname uts;
+  const char * dsthint;
 
-  if (openfiles(vol, srcname, dstname, 0, &ifile, &ofile) == -1)
+  printf("----> ok %s %s\n",srcname,dstname);
+  if (openfiles(vol, srcname, dstname, 0, &ifile, &ofile, &dsthint) == -1)
     return -1;
+  major=atol(uts.release);
+  if(major>9) {
+      rsrcname=malloc(strlen(dsthint)+strlen(RSRC_SUFFIX)+1);
+      strcpy(rsrcname,dstname);
+      strcat(rsrcname,RSRC_SUFFIX);
+  } else {
+      rsrcname=malloc(strlen(dsthint)+strlen(RSRC_SUFFIX_OLD)+1);
+      strcpy(rsrcname,dstname);
+      strcat(rsrcname,RSRC_SUFFIX_OLD);
+  }
 
   result = do_raw(ifile, ofile);
 
@@ -691,17 +706,7 @@ int cpo_x(hfsvol *vol, const char *srcname, const char *dstname)
   }
 
   uname(&uts);
-  major=atol(uts.release);
-  if(major>9) {
-      rsrcname=malloc(strlen(dstname)+strlen(RSRC_SUFFIX)+1);
-      strcpy(rsrcname,dstname);
-      strcat(rsrcname,RSRC_SUFFIX);
-  } else {
-      rsrcname=malloc(strlen(dstname)+strlen(RSRC_SUFFIX_OLD)+1);
-      strcpy(rsrcname,dstname);
-      strcat(rsrcname,RSRC_SUFFIX_OLD);
-  }
-  if (openfiles(vol, srcname, rsrcname, 0, &ifile, &ofile) == -1) {
+  if (openfiles(vol, srcname, rsrcname, 0, &ifile, &ofile, &dsthint) == -1) {
     free(rsrcname);
     return -1;
   }
