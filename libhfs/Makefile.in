@@ -72,9 +72,8 @@ check :: all
 	@echo "No self-tests available."
 
 install ::
-	$(INSTALL) -d $(DESTDIR)/$(LIBDEST)
-	$(LIBINSTALL) libhfs.a "$(DESTDIR)/$(LIBDEST)/."
-	$(LIBINSTALL) hfs.h "$(DESTDIR)/$(INCDEST)/."
+	$(LIBINSTALL) libhfs.a "$(LIBDEST)/."
+	$(LIBINSTALL) hfs.h "$(INCDEST)/."
 
 again :: clean all
 
@@ -89,7 +88,7 @@ clean ::
 	rm -f $(TARGETS) *.o gmon.* core
 
 distclean :: clean
-	rm -f os.c config.status config.cache config.log config.h Makefile
+	rm -f config.status config.cache config.log config.h Makefile
 
 maintainer-clean :: distclean
 	rm -f config.h.in configure

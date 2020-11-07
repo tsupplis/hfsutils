@@ -40,11 +40,6 @@
 # include "copyin.h"
 # include "copyout.h"
 
-#ifdef __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__
-# include <sys/utsname.h>
-# include <sys/xattr.h>
-#endif
-
 extern int optind;
 
 /*
@@ -65,23 +60,12 @@ cpifunc automode_unix(const char *path)
     { ".txt",  cpi_text },
     { ".c",    cpi_text },
     { ".h",    cpi_text },
-    { ".cp",   cpi_text },
-    { ".hp",   cpi_text },
-    { ".p",    cpi_text },
     { ".html", cpi_text },
     { ".htm",  cpi_text },
-    { ".xml",  cpi_text },
     { ".rtf",  cpi_text },
 
     { 0,       0        }
   };
-
-#ifdef __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__
-    if(getxattr(path,XATTR_FINDERINFO_NAME,0,0,0,0) != -1 ||
-        getxattr(path,XATTR_RESOURCEFORK_NAME,0,0,0,0) != -1) {
-        return cpi_x;
-    }
-#endif
 
   path += strlen(path);
 
@@ -91,12 +75,7 @@ cpifunc automode_unix(const char *path)
 	return exts[i].func;
     }
 
-#ifdef __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__
-  return cpi_x;
-#else
   return cpi_raw;
-#endif
-
 }
 
 /*
@@ -137,12 +116,6 @@ int do_copyin(hfsvol *vol, int argc, char *argv[], const char *dest, int mode)
     case 'r':
       copyfile = cpi_raw;
       break;
-
-#ifdef __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__
-    case 'x':
-      copyfile = cpi_x;
-      break;
-#endif
     }
 
   for (i = 0; i < argc; ++i)
@@ -180,9 +153,6 @@ int do_copyin(hfsvol *vol, int argc, char *argv[], const char *dest, int mode)
 static
 cpofunc automode_hfs(hfsvol *vol, const char *path)
 {
-#ifdef __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__
-  return cpo_x;
-#else
   hfsdirent ent;
 
   if (hfs_stat(vol, path, &ent) != -1)
@@ -193,8 +163,8 @@ cpofunc automode_hfs(hfsvol *vol, const char *path)
       else if (ent.u.file.rsize == 0)
 	return cpo_raw;
     }
+
   return cpo_macb;
-#endif
 }
 
 /*
@@ -235,12 +205,6 @@ int do_copyout(hfsvol *vol, int argc, char *argv[], const char *dest, int mode)
     case 'r':
       copyfile = cpo_raw;
       break;
-
-#ifdef __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__
-    case 'x':
-      copyfile = cpo_x;
-      break;
-#endif
     }
 
   for (i = 0; i < argc; ++i)
@@ -278,13 +242,8 @@ int do_copyout(hfsvol *vol, int argc, char *argv[], const char *dest, int mode)
 static
 int usage(void)
 {
-#ifdef __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__
-  fprintf(stderr, "Usage: %s [-m|-b|-t|-r|-a|-x] source-path [...] target-path\n",
+  fprintf(stderr, "Usage: %s [-m|-b|-t|-r|-a] source-path [...] target-path\n",
 	  argv0);
-#else
-  fprintf(stderr, "Usage: %s [-m|-b|-t|-r|-a| source-path [...] target-path\n",
-	  argv0);
-#endif
 
   return 1;
 }
@@ -306,11 +265,7 @@ int hcopy_main(int argc, char *argv[])
     {
       int opt;
 
-#ifdef __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__
-      opt = getopt(argc, argv, "mbtrax");
-#else
       opt = getopt(argc, argv, "mbtra");
-#endif
       if (opt == EOF)
 	break;
 

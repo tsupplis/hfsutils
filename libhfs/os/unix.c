@@ -19,6 +19,11 @@
  * $Id: unix.c,v 1.8 1998/11/02 22:09:13 rob Exp $
  */
 
+#ifdef __linux__
+#define _FILE_OFFSET_BITS 64
+#define _LARGE_FILES
+#endif
+
 # ifdef HAVE_CONFIG_H
 #  include "config.h"
 # endif
@@ -40,8 +45,6 @@ ssize_t write(int, const char *, size_t);
 int stat(const char *, struct stat *);
 int fstat(int, struct stat *);
 # endif
-
-# include <stdint.h>
 
 # include <errno.h>
 # include <sys/stat.h>
@@ -85,7 +88,7 @@ int os_open(void **priv, const char *path, int mode)
       (errno == EACCES || errno == EAGAIN))
     ERROR(EAGAIN, "unable to obtain lock for medium");
 
-  *priv = (void *) (uintptr_t)fd;
+  *priv = (void *) fd;
 
   return 0;
 

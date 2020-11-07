@@ -24,7 +24,7 @@
 const char hfsutils_rcsid[] =
   "$Id: version.c,v 1.11 1998/11/02 22:08:33 rob Exp $";
 
-const char hfsutils_version[]   = "hfsutils version 3.2.6.ts2";
+const char hfsutils_version[]   = "hfsutils version 3.2.6";
 const char hfsutils_copyright[] = "Copyright (C) 1996-1998 Robert Leslie";
 const char hfsutils_author[]    = "Robert Leslie <rob@mars.org>";
 

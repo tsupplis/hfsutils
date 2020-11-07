@@ -54,7 +54,7 @@ AC_C_CONST
 
 dnl Checks for library functions.
 
-AC_LIBOBJ
+AC_SUBST(LIBOBJS)
 AC_CHECK_FUNCS(mktime)
 
 dnl Create output files.

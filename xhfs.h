@@ -1,5 +1,5 @@
 /*
- * librsrc - library for reading and writing Macintosh resources
+ * hfsutils - tools for reading and writing Macintosh HFS volumes
  * Copyright (C) 1996-1998 Robert Leslie
  *
  * This program is free software; you can redistribute it and/or modify
@@ -16,14 +16,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * $Id: version.c,v 1.11 1998/11/02 22:09:17 rob Exp $
+ * $Id: xhfs.h,v 1.7 1998/04/11 08:27:01 rob Exp $
  */
 
-# include "version.h"
-
-const char librsrc_rcsid[] =
-  "$Id: version.c,v 1.11 1998/11/02 22:09:17 rob Exp $";
-
-const char librsrc_version[]   = "librsrc version 3.2.6";
-const char librsrc_copyright[] = "Copyright (C) 1996-1998 Robert Leslie";
-const char librsrc_author[]    = "Robert Leslie <rob@mars.org>";
+extern char xhfs[];

@@ -16,14 +16,49 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * $Id: copyin.h,v 1.6 1998/04/11 08:26:54 rob Exp $
+ * $Id: hfssh.c,v 1.8 1998/04/11 08:26:57 rob Exp $
  */
 
-extern const char *cpi_error;
+# ifdef HAVE_CONFIG_H
+#  include "config.h"
+# endif
 
-typedef int (*cpifunc)(const char *, hfsvol *, const char *);
+# ifdef HAVE_UNISTD_H
+#  include <unistd.h>
+# endif
 
-int cpi_macb(const char *, hfsvol *, const char *);
-int cpi_binh(const char *, hfsvol *, const char *);
-int cpi_text(const char *, hfsvol *, const char *);
-int cpi_raw(const char *, hfsvol *, const char *);
+# include <tcl.h>
+
+# include "tclhfs.h"
+# include "suid.h"
+
+/*
+ * NAME:	Tcl->AppInit()
+ * DESCRIPTION:	initialize interpreter
+ */
+int Tcl_AppInit(Tcl_Interp *interp)
+{
+  Tcl_SetVar(interp, "hfs_interactive",
+	     isatty(STDIN_FILENO) ? "1" : "0", TCL_GLOBAL_ONLY);
+
+  if (Tcl_Init(interp) == TCL_ERROR)
+    return TCL_ERROR;
+
+  if (Hfs_Init(interp) == TCL_ERROR)
+    return TCL_ERROR;
+
+  return TCL_OK;
+}
+
+/*
+ * NAME:	main()
+ * DESCRIPTION:	program entry
+ */
+int main(int argc, char *argv[])
+{
+  suid_init();
+
+  Tcl_Main(argc, argv, Tcl_AppInit);
+
+  return 0;  /* not reached */
+}

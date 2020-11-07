@@ -68,7 +68,6 @@ int main(int argc, char *argv[])
 {
   int i, len;
   const char *dot;
-  const char *altpath=0;
 
   struct {
     const char *name;
@@ -127,7 +126,7 @@ int main(int argc, char *argv[])
 
 	  bargv0 = list[i].name;
 
-	  if (hcwd_init(altpath) == -1)
+	  if (hcwd_init() == -1)
 	    {
 	      perror("Failed to initialize HFS working directories");
 	      return 1;
@@ -277,7 +276,7 @@ char **hfsutil_glob(hfsvol *vol, int argc, char *argv[],
 char *hfsutil_getcwd(hfsvol *vol)
 {
   char *path, name[HFS_MAX_FLEN + 1 + 1];
-  unsigned long cwd;
+  long cwd;
   int pathlen;
 
   path    = malloc(1);
