@@ -2,7 +2,7 @@
 .SH NAME
 hcopy \- copy files from or to an HFS volume
 .SH SYNOPSIS
-hcopy [-m|-b|-t|-r|-a|-x]
+hcopy [-m|-b|-t|-r|-a]
 .I source-path
 [...]
 .I target-path
@@ -30,10 +30,6 @@ file are preserved.
 Performs end-of-line translation. Only the data fork of the Macintosh file is
 copied.
 .TP
--x
-.BR "OS/X Data" :
-Performs no translation. Copy creator, type and resource fork from and to OS/X. (Only available on OS/X)
-.TP
 -r
 .BR "Raw Data" :
 Performs no translation. Only the data fork of the Macintosh file is copied.
@@ -41,8 +37,7 @@ Performs no translation. Only the data fork of the Macintosh file is copied.
 -a
 .BR Automatic :
 A mode will be chosen automatically for each file based on a set of predefined
-heuristics. On OS/X, the behaviour will be like -x if type, creator or fork exist
-while copying to HFS and always like -x while copying to OS/X.
+heuristics.
 .PP
 If no mode is specified, -a is assumed.
 .PP

@@ -25,6 +25,37 @@ AC_CONFIG_HEADER(config.h)
 
 AC_CONFIG_SUBDIRS(libhfs librsrc)
 
+AC_ARG_WITH(tcl,
+    [  --with-tcl[=DIR]        build the Tcl components], [
+    case "$with_tcl" in
+	yes|no)
+	    tcl_dir="DEFAULT"
+	    ;;
+	*)
+	    tcl_dir="$with_tcl"
+	    with_tcl=yes
+	    ;;
+    esac
+])
+
+AC_ARG_WITH(tk,
+    [  --with-tk[=DIR]         build the Tk components], [
+    case "$with_tk" in
+	yes|no)
+	    tk_dir="DEFAULT"
+	    ;;
+	*)
+	    tk_dir="$with_tk"
+	    with_tk=yes
+	    ;;
+    esac
+])
+
+if test "$with_tk" = yes && test "$with_tcl" != yes
+then
+    AC_MSG_ERROR(--with-tk requires --with-tcl)
+fi
+
 dnl Checks for programs.
 
 AC_PROG_MAKE_SET
@@ -72,6 +103,170 @@ INSTALL_TARGETS=""
 
 AC_SUBST(MAKE_TARGETS)
 AC_SUBST(INSTALL_TARGETS)
+
+dnl Tcl configuration.
+
+TCL_INCLUDES=""
+TCL_LIB_SPEC=""
+TCL_LIBS=""
+
+AC_SUBST(TCL_INCLUDES)
+AC_SUBST(TCL_LIB_SPEC)
+AC_SUBST(TCL_LIBS)
+
+if test "$with_tcl" = yes
+then
+    AC_MSG_CHECKING(for Tcl)
+
+    found=""
+    for dir in  \
+	"$tcl_dir"		\
+	"$tcl_dir/lib"		\
+	"$tcl_dir/../lib"	\
+	/usr/local/lib		\
+	/usr/local/lib/tcl*	\
+	/usr/local/tcl*/lib	\
+	/usr/lib		\
+	/usr/lib/tcl*		\
+	/usr/tcl*/lib		\
+	;			\
+    do
+	if test -r "$dir/tclConfig.sh"
+	then
+	    found="$dir"
+	    break
+	fi
+    done
+
+    if test -z "$found"
+    then
+	AC_MSG_RESULT(cannot find installation)
+	AC_MSG_ERROR(use --without-tcl or --with-tcl=DIR)
+    fi
+
+    tcl_dir="$found"
+    . "$tcl_dir/tclConfig.sh"
+
+    AC_MSG_RESULT(version $TCL_VERSION in $tcl_dir)
+
+    AC_MSG_CHECKING(for tcl.h)
+
+    found=""
+    for dir in  \
+	$TCL_PREFIX/include				\
+	$TCL_PREFIX/include/tcl*			\
+	$TCL_PREFIX/tcl*/include			\
+	"$tcl_dir"					\
+	"$tcl_dir/include"				\
+	"$tcl_dir/../include"				\
+	`echo "$tcl_dir" | sed -e 's|/lib|/include|'`	\
+	;						\
+    do
+	if test -r "$dir/tcl.h"
+	then
+	    found="$dir"
+	    break
+	fi
+    done
+
+    if test -z "$found"
+    then
+	AC_MSG_RESULT(not found)
+	AC_MSG_WARN(compilation of Tcl components may fail)
+	AC_MSG_WARN(edit Makefile if necessary and contact author)
+    else
+	AC_MSG_RESULT($found)
+	TCL_INCLUDES="-I$found"
+    fi
+
+    MAKE_TARGETS="$MAKE_TARGETS all_tcl"
+    INSTALL_TARGETS="$INSTALL_TARGETS install_tcl"
+fi
+
+dnl Tk configuration.
+
+TK_INCLUDES=""
+TK_LIB_SPEC=""
+TK_LIBS=""
+
+AC_SUBST(TK_INCLUDES)
+AC_SUBST(TK_LIB_SPEC)
+AC_SUBST(TK_LIBS)
+
+if test "$with_tk" = yes
+then
+    AC_MSG_CHECKING(for Tk)
+
+    found=""
+    for dir in  \
+	"$tk_dir"		\
+	"$tk_dir/lib"		\
+	"$tk_dir/../lib"	\
+	/usr/local/lib		\
+	/usr/local/lib/tk*	\
+	/usr/local/tk*/lib	\
+	/usr/lib		\
+	/usr/lib/tk*		\
+	/usr/tk*/lib		\
+	;			\
+    do
+	if test -r "$dir/tkConfig.sh"
+	then
+	    found="$dir"
+	    break
+	fi
+    done
+
+    if test -z "$found"
+    then
+	AC_MSG_RESULT(cannot find installation)
+	AC_MSG_ERROR(use --without-tk or --with-tk=DIR)
+    fi
+
+    tk_dir="$found"
+    . "$tk_dir/tkConfig.sh"
+
+    AC_MSG_RESULT(version $TK_VERSION in $tk_dir)
+
+    AC_MSG_CHECKING(for tk.h)
+
+    found=""
+    for dir in  \
+	$TK_PREFIX/include				\
+	$TK_PREFIX/include/tk*				\
+	$TK_PREFIX/tk*/include				\
+	"$tk_dir"					\
+	"$tk_dir/include"				\
+	"$tk_dir/../include"				\
+	`echo "$tk_dir" | sed -e 's|/lib|/include|'`	\
+	;						\
+    do
+	if test -r "$dir/tk.h"
+	then
+	    found="$dir"
+	    break
+	fi
+    done
+
+    if test -z "$found"
+    then
+	AC_MSG_RESULT(not found)
+	AC_MSG_WARN(compilation of Tk components may fail)
+	AC_MSG_WARN(edit Makefile if necessary and contact author)
+    else
+	AC_MSG_RESULT($found)
+
+	if test "x-I$found" != "x$TCL_INCLUDES"
+	then
+	    TK_INCLUDES="-I$found"
+	fi
+    fi
+
+    TK_INCLUDES="$TK_INCLUDES $TK_XINCLUDES"
+
+    MAKE_TARGETS="$MAKE_TARGETS all_tk"
+    INSTALL_TARGETS="$INSTALL_TARGETS install_tk"
+fi
 
 dnl Other options.
 

@@ -19,10 +19,18 @@
 # $Id: Makefile,v 1.5 1998/04/11 08:27:23 rob Exp $
 #
 
-all :: 
+all :: test1 test2
 
 clean ::
 	rm -f gmon.* image.hfs core
 
 depend ::
 
+test1 :: ../hfssh ../hfs
+	@echo; echo "source main.tcl; test1" | ../hfssh ../hfs
+
+test2 :: ../hfssh ../hfs
+	@echo; echo "source main.tcl; test2" | ../hfssh ../hfs
+
+test3 :: ../hfssh ../hfs
+	@echo; echo "source main.tcl; test3" | ../hfssh ../hfs

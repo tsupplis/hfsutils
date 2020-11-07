@@ -47,6 +47,15 @@ General to-do items (aka bugs):
   * glob hcopy destination HFS path?
   * formalize hdisk.pl into the distribution
 
+  xhfs
+
+  * open arbitrary partitions
+  * rename volumes
+  * change file type/creator
+  * more support for other platforms (correct device defaults; df output)
+  * graphical partition map editor?
+  * recursive copy: map illegal directory name chars
+
   copyin/copyout
 
   * finish/fix timestamp preservation
